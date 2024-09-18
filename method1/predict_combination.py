@@ -1,5 +1,4 @@
 from scipy import stats
-import numpy as np
 import random
 
 # Avrage preformance 74 %
@@ -76,7 +75,7 @@ def generate_pdfs(songs):
     liked_pmfs[attr] = [liked_data.count(x)/len(liked_data) for x in range(12)]
     disliked_pmfs[attr] = [disliked_data.count(x)/len(disliked_data) for x in range(12)]
     
-   
+
     return liked_pmfs, disliked_pmfs
 
 
@@ -152,7 +151,6 @@ def main():
    
     print(test(songs, no_tests=20))
    
-    
 
 if __name__ == "__main__":
     main()
