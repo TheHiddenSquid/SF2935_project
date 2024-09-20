@@ -3,6 +3,7 @@ import random
 
 # Avrage preformance 75 %
 
+
 class Song():
     def __init__(self, data):
         self.danceability = eval(data[0])
@@ -92,40 +93,20 @@ def generate_pdfs(songs):
     return liked_pdfs, disliked_pdfs
 
 
-def eval_pdf(song, pdfs, epsilon=0.01):
+def eval_pdf(song, pdfs):
     tot = 1
 
     # Count all beta distributions:
-    attributes = ["danceability", "energy", "speechiness", "acousticness", "liveness"]
+    attributes = ["danceability", "energy", "speechiness", "acousticness", "liveness"] + ["loudness","valence","tempo"]
     bounds_dict = {"danceability":[0,1], "energy":[0,1], "loudness":[-60,0], "speechiness":[0,1], "acousticness":[0,1], "liveness":[0,1], "valence":[0,1], "tempo":[20,200]}
 
     for attr in attributes:
         m = bounds_dict[attr][0]
         M = bounds_dict[attr][1]
         rel_x = (getattr(song, attr)-m)/(M-m)
-        if rel_x - epsilon/2 < 0:
-            tot *= pdfs[attr].cdf(epsilon)
-        elif rel_x + epsilon/2 > 1:
-            tot *= 1 - pdfs[attr].cdf(1-epsilon)
-        else:
-            tot *= pdfs[attr].cdf(rel_x+epsilon/2) - pdfs[attr].cdf(rel_x-epsilon/2)
-
-
-    # Count the Kernel density estimations:
-    attributes = ["loudness","valence","tempo"]
-
-    for attr in attributes:
-        m = bounds_dict[attr][0]
-        M = bounds_dict[attr][1]
-        rel_x = (getattr(song, attr)-m)/(M-m)
-        if rel_x - epsilon/2 < 0:
-            tot *= pdfs[attr].integrate_box_1d(0, rel_x+epsilon)
-        elif rel_x + epsilon/2 > 1:
-            tot *= pdfs[attr].integrate_box_1d(rel_x-epsilon, 1)
-        else:
-            tot *= pdfs[attr].integrate_box_1d(rel_x-epsilon/2, rel_x+epsilon/2)
-
-
+        
+        tot *= pdfs[attr].pdf(rel_x)
+       
     # Count the categorical-distributions:
     attr = "mode"
     tot *= pdfs[attr][getattr(song, attr)]
