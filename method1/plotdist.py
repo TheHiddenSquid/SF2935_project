@@ -41,10 +41,10 @@ def main():
 
     # NEEDS CUSTOM: key, mode
     bins = 20
-    choices = ["danceability", "energy", "key", "loudness", "mode", "speechiness", "acousticness", "instrumentalness", "liveness", "valence","tempo"]
+    choices = ["danceability", "energy", "loudness", "speechiness", "acousticness", "instrumentalness", "liveness", "valence","tempo"]
     
 
-    bounds_dict = {"danceability":[0,1], "energy":[0,1], "key":[0,11],"loudness":[-60,0], "mode":[0,1], "speechiness":[0,1], "acousticness":[0,1], "instrumentalness":[0,1], "liveness":[0,1], "valence":[0,1], "tempo":[20,200]}
+    bounds_dict = {"danceability":[0,1], "energy":[0,1],"loudness":[-60,0], "speechiness":[0,1], "acousticness":[0,1], "instrumentalness":[0,1], "liveness":[0,1], "valence":[0,1], "tempo":[20,200]}
 
     for choice in choices:
         
@@ -62,6 +62,7 @@ def main():
         a,b, *args = stats.fit(stats.beta, liked_data, [(0, 100), (0, 100)]).params
         x = np.linspace(0,1,100)
         rv = stats.beta(a, b)
+        rv = stats.gaussian_kde(liked_data)
         plt.plot(x, rv.pdf(x), 'b-', lw=2, label='estimate')
         plt.legend(loc="upper right")
 
@@ -71,12 +72,13 @@ def main():
         a,b, *args = stats.fit(stats.beta, disliked_data, [(0, 100), (0, 100)]).params
         x = np.linspace(0,1,100)
         rv = stats.beta(a, b)
+        rv = stats.gaussian_kde(disliked_data)
         plt.plot(x, rv.pdf(x), 'r-', lw=2, label='estimate')
         plt.legend(loc="upper right")
         
         
         plt.suptitle(choice)
-        plt.savefig(f"{choice}.png")
+        plt.show()
     
 
     

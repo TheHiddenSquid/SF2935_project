@@ -1,7 +1,7 @@
 from scipy import stats
 import random
 
-# Avrage preformance 74 %
+# Avrage preformance 75 %
 
 class Song():
     def __init__(self, data):
@@ -38,8 +38,8 @@ def generate_pdfs(songs):
     liked_songs = [x for x in songs if x.Label == 1]
     disliked_songs = [x for x in songs if x.Label == 0]
     
-    liked_pmfs = {}
-    disliked_pmfs = {}
+    liked_pdfs = {}
+    disliked_pdfs = {}
 
     # Beta distribution for all these:
     attributes = ["danceability", "energy", "loudness", "speechiness", "acousticness", "liveness", "valence","tempo", "instrumentalness"]
@@ -52,10 +52,12 @@ def generate_pdfs(songs):
         disliked_data = [(getattr(x, attr)-m)/(M-m) for x in disliked_songs]
 
         a,b, *args = stats.fit(stats.beta, liked_data, [(0, 100), (0, 100)]).params
-        liked_pmfs[attr] = stats.beta(a, b)
+        liked_pdfs[attr] = stats.beta(a, b)
+        #liked_pdfs[attr] = stats.gaussian_kde(liked_data)
        
         a,b, *args = stats.fit(stats.beta, disliked_data, [(0, 100), (0, 100)]).params
-        disliked_pmfs[attr] = stats.beta(a, b)
+        disliked_pdfs[attr] = stats.beta(a, b)
+        #liked_pdfs[attr] = stats.gaussian_kde(disliked_data)
     
 
     # Custum for "mode"
@@ -63,8 +65,8 @@ def generate_pdfs(songs):
     liked_data = [getattr(x, attr) for x in liked_songs]
     disliked_data = [getattr(x, attr) for x in disliked_songs]
 
-    liked_pmfs[attr] = [liked_data.count(x)/len(liked_data) for x in [0,1]]
-    disliked_pmfs[attr] = [disliked_data.count(x)/len(disliked_data) for x in [0,1]]
+    liked_pdfs[attr] = [liked_data.count(x)/len(liked_data) for x in [0,1]]
+    disliked_pdfs[attr] = [disliked_data.count(x)/len(disliked_data) for x in [0,1]]
 
 
     # Custom for "key"
@@ -72,14 +74,14 @@ def generate_pdfs(songs):
     liked_data = [getattr(x, attr) for x in liked_songs]
     disliked_data = [getattr(x, attr) for x in disliked_songs]
 
-    liked_pmfs[attr] = [liked_data.count(x)/len(liked_data) for x in range(12)]
-    disliked_pmfs[attr] = [disliked_data.count(x)/len(disliked_data) for x in range(12)]
+    liked_pdfs[attr] = [liked_data.count(x)/len(liked_data) for x in range(12)]
+    disliked_pdfs[attr] = [disliked_data.count(x)/len(disliked_data) for x in range(12)]
     
 
-    return liked_pmfs, disliked_pmfs
+    return liked_pdfs, disliked_pdfs
 
 
-def eval_pdf(pmfs, song):
+def eval_pdf(song, pdfs, epsilon=0.01):
     tot = 1
 
     # Count all beta distributions:
@@ -90,28 +92,33 @@ def eval_pdf(pmfs, song):
         m = bounds_dict[attr][0]
         M = bounds_dict[attr][1]
         rel_x = (getattr(song, attr)-m)/(M-m)
-        tot *= pmfs[attr].pdf(rel_x)
+        if rel_x - epsilon/2 < 0:
+            tot *= pdfs[attr].cdf(epsilon)
+        elif rel_x + epsilon/2 > 1:
+            tot *= 1 - pdfs[attr].cdf(1-epsilon)
+        else:
+            tot *= pdfs[attr].cdf(rel_x+epsilon/2) - pdfs[attr].cdf(rel_x-epsilon/2)
 
 
-    # Count the bernoulli-distribution:
+    # Count the categorical-distributions:
     attr = "mode"
-    tot *= pmfs[attr][getattr(song, attr)]
+    tot *= pdfs[attr][getattr(song, attr)]
 
     attr = "key"
-    tot *= pmfs[attr][getattr(song, attr)]
+    tot *= pdfs[attr][getattr(song, attr)]
 
     # Custom for instrumentalness:
     attr = "instrumentalness"
     rel_x = getattr(song, attr)
     if rel_x < 0.01:
         rel_x = 0.01
-    tot *= pmfs[attr].pdf(rel_x)
+    tot *= pdfs[attr].pdf(rel_x)
 
     return tot
 
 
 def guess_label(song, liked_pdfs, disliked_pdfs, p_liked, p_disliked):
-    if eval_pdf(liked_pdfs, song) * p_liked > eval_pdf(disliked_pdfs, song) * p_disliked:
+    if eval_pdf(song, liked_pdfs) * p_liked > eval_pdf(song, disliked_pdfs) * p_disliked:
         ans = 1
     else:
         ans = 0
@@ -146,7 +153,7 @@ def test(songs, no_tests):
 
 
 def main():
-    random.seed("random1")
+    random.seed("rando1m")
     songs = get_songs()
    
     print(test(songs, no_tests=20))
