@@ -1,35 +1,34 @@
 import matplotlib.pyplot as plt
-import numpy as np
+from typing import List
 import random
 
 # Avrage preformance: 75 % correctness (unseen data)
 # Preformance: 80 % correctness (training data)
 
 class Song():
-    def __init__(self, data):
-        self.danceability = eval(data[0])
-        self.energy = eval(data[1])
-        self.key = eval(data[2])
-        self.loudness = eval(data[3])
-        self.mode = eval(data[4])
-        self.speechiness = eval(data[5])
-        self.acousticness = eval(data[6])
-        self.instrumentalness = eval(data[7])
-        self.liveness = eval(data[8])
-        self.valence = eval(data[9])
-        self.tempo = eval(data[10])
-        self.Label = eval(data[11])
+    def __init__(self, danceability, energy, key, loudness, mode, speechiness,
+                 acousticness, instrumentalness, liveness, valence, tempo, Label):
+        self.danceability = danceability
+        self.energy = energy
+        self.key = key
+        self.loudness = loudness
+        self.mode = mode
+        self.speechiness = speechiness
+        self.acousticness = acousticness
+        self.instrumentalness = instrumentalness
+        self.liveness = liveness
+        self.valence = valence
+        self.tempo = tempo
+        self.Label = Label
 
 
-def get_songs():
+def get_songs(filename: str) -> List[Song]:
     songs = []
-    with open("project_train.csv") as f:
-        skip = True
+    with open(filename) as f:
+        f.readline() # skip first
         for line in f:
-            if skip:
-                skip = False
-                continue
-            songs.append(Song(line.strip().split(",")))
+            songdata = [eval(x) for x in line.strip().split(",")]
+            songs.append(Song(*songdata))
 
     del songs[84]       # outlier
     del songs[93]       # outlier
@@ -185,7 +184,7 @@ def optimize_bins(songs, b_max, no_training_songs):
 
 def main():
     random.seed("random")
-    songs = get_songs()
+    songs = get_songs("project_train.csv")
     
     ans = test_precent_correct_on_dataset(songs, bins=12, no_tests=200, no_training_songs=400)
     print(ans)
