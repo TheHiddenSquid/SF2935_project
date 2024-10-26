@@ -81,7 +81,7 @@ def test_methods(songs, no_tests, method):
 
 def main():
 
-    songs = get_songs("project_train.csv")
+    songs = get_songs("../project_train.csv")
 
     ans = test_methods(songs, 1000, "QDA")
     print("QDA correctness:", ans, "%")

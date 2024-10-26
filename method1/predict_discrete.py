@@ -184,7 +184,7 @@ def optimize_bins(songs, b_max, no_training_songs):
 
 def main():
     random.seed("random")
-    songs = get_songs("project_train.csv")
+    songs = get_songs("../project_train.csv")
     
     ans = test_precent_correct_on_dataset(songs, bins=12, no_tests=200, no_training_songs=400)
     print(ans)

@@ -147,7 +147,7 @@ def test(songs, no_tests):
 
 def main():
     random.seed("ra1ndom")
-    songs = get_songs("project_train.csv")
+    songs = get_songs("../project_train.csv")
    
     print(test(songs, no_tests=25))
    
