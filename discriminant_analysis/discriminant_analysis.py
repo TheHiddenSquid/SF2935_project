@@ -21,9 +21,9 @@ def get_songs(filename: str) -> List[List[float]]:
 
 def classify(song, liked_rv, disliked_rv) -> bool:
     if liked_rv.pdf(song) > disliked_rv.pdf(song):
-        return True
+        return 1
     else:
-        return False
+        return 0
 
 
 def generate_QDA_rvs(training_data):
