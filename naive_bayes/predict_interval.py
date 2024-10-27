@@ -1,8 +1,9 @@
 from scipy import stats
 from typing import List
 import random
+import matplotlib.pyplot as plt
 
-# Avrage preformance 75 %
+# Avrage preformance 74.3 %
 
 class Song():
     def __init__(self, danceability, energy, key, loudness, mode, speechiness,
@@ -92,11 +93,10 @@ def generate_pdfs(songs):
     return liked_pdfs, disliked_pdfs
 
 
-def eval_pdf(song, pdfs):
+def eval_pdf(song, pdfs, epsilon):
     tot = 1
-
     # Count all beta distributions:
-    attributes = ["danceability", "energy", "speechiness", "acousticness", "liveness"] + ["loudness","valence","tempo"]
+    attributes = ["danceability", "energy", "speechiness", "acousticness", "liveness"]
     bounds_dict = {"danceability":[0,1], "energy":[0,1], "loudness":[-60,0], "speechiness":[0,1], "acousticness":[0,1], "liveness":[0,1], "valence":[0,1], "tempo":[20,200]}
 
     for attr in attributes:
@@ -104,8 +104,18 @@ def eval_pdf(song, pdfs):
         M = bounds_dict[attr][1]
         rel_x = (getattr(song, attr)-m)/(M-m)
         
-        tot *= pdfs[attr].pdf(rel_x)
+        tot *= pdfs[attr].cdf(rel_x+epsilon/2) - pdfs[attr].cdf(rel_x-epsilon/2)
        
+    attributes = ["loudness","valence","tempo"]
+
+    for attr in attributes:
+        m = bounds_dict[attr][0]
+        M = bounds_dict[attr][1]
+        rel_x = (getattr(song, attr)-m)/(M-m)
+        
+        tot *= pdfs[attr].integrate_box_1d(rel_x-epsilon/2, rel_x+epsilon/2)
+
+
     # Count the categorical-distributions:
     attr = "mode"
     tot *= pdfs[attr][getattr(song, attr)]
@@ -123,15 +133,15 @@ def eval_pdf(song, pdfs):
     return tot
 
 
-def guess_label(song, liked_pdfs, disliked_pdfs, p_liked, p_disliked):
-    if eval_pdf(song, liked_pdfs) * p_liked > eval_pdf(song, disliked_pdfs) * p_disliked:
+def guess_label(song, liked_pdfs, disliked_pdfs, p_liked, p_disliked, epsilon):
+    if eval_pdf(song, liked_pdfs, epsilon) * p_liked > eval_pdf(song, disliked_pdfs, epsilon) * p_disliked:
         ans = 1
     else:
         ans = 0
     return ans
 
 
-def test(songs, no_tests):
+def test(songs, no_tests, epsilon):
     count = 0
     for i in range(no_tests):
         print(i)
@@ -148,22 +158,38 @@ def test(songs, no_tests):
         correct = 0
         tot = 0
         for song in testing_songs:
-            guess = guess_label(song, liked_pdfs, disliked_pdfs, p_liked, p_disliked)
+            guess = guess_label(song, liked_pdfs, disliked_pdfs, p_liked, p_disliked, epsilon)
             if guess == song.Label:
                 correct += 1
             tot += 1
         
         count +=correct/tot
 
-    return f"average percentage: {count/no_tests}"
+    return count/no_tests
 
 
 def main():
+    
+
     random.seed("ra1ndom")
     songs = get_songs("../project_train.csv")
+
+    print(test(songs, no_tests=100, epsilon=0.01))
+    quit()
+
+
+    # Plot generation
+    eps = []
+    cor = []
+    for val in [0.00001, 0.000025, 0.00005, 0.000075, 0.0001, 0.00025, 0.0005, 0.00075, 0.001, 0.0025, 0.005, 0.0075, 0.01, 0.025, 0.05, 0.075, 0.1, 0.25, 0.5]:
+        eps.append(val)
+        cor.append(test(songs, no_tests=25, epsilon=val))
    
-    print(test(songs, no_tests=25))
-   
+    plt.semilogx(eps, cor)
+    plt.xlabel(r"$\epsilon$")
+    plt.ylabel(r"correctness (%)")
+    plt.title("epsilon vs correctness")
+    plt.show()
 
 if __name__ == "__main__":
     main()

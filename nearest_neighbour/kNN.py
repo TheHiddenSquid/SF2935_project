@@ -8,7 +8,7 @@ from typing import List
 
 
 # 79.04 %    no weight
-# 81.1 %    custom weight   [0.82, 1.02, 0.26, 1.35, 0.15, 2, 0.98, 0.84, 1.13, 0.88, 0]
+# 81.23 %    custom weight   [0.82, 1.02, 0.26, 1.35, 0.15, 2, 0.98, 0.84, 1.13, 0.88, 0]
 
 class Song():
     def __init__(self, danceability, energy, key, loudness, mode, speechiness,
