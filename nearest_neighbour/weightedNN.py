@@ -3,8 +3,9 @@ import numpy as np
 import matplotlib.pyplot as plt
 from typing import List
 
-# Optimal 
-
+# Best
+# 79.2% sceme = 1, k = 32
+# 79.4% sceme = 2, k = 5
 
 class Song():
     def __init__(self, danceability, energy, key, loudness, mode, speechiness,
@@ -109,7 +110,7 @@ def main():
     print(random_training_data_test(songs, 32, 1, 100))
     print(random_training_data_test(songs, 5, 2, 100))
     
-    
+
     # Graph for varying k
     ks = []
     ans1 = []
@@ -126,8 +127,8 @@ def main():
     plt.title("Correctness vs k")
     plt.legend(loc="upper right")
     plt.show()
-    
 
+    
 
 if __name__ == "__main__":
     main()

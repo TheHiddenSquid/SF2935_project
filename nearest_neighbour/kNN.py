@@ -3,10 +3,6 @@ import numpy as np
 import matplotlib.pyplot as plt
 from typing import List
 
-# Average of 78 % correct (unseen data)
-# 78 % if k=3 and k=5
-
-
 # 79.04 %    no weight
 # 81.23 %    custom weight   [0.82, 1.02, 0.26, 1.35, 0.15, 2, 0.98, 0.84, 1.13, 0.88, 0]
 
@@ -52,8 +48,8 @@ def classify(song: Song, training_data: List[Song], k:int = 5, metric:int = 1) -
         for attr in attributes:
             distances.append( abs(getattr(other, attr) - getattr(song, attr)) / (bounds_dict[attr][1]-bounds_dict[attr][0]) )
 
-        weights =  [0.82, 1.02, 0.26, 1.35, 0.15, 2, 0.98, 0.84, 1.13, 0.88, 0]     # Weights
-        #weights =  [1]*11                                                          # No weights
+        #weights =  [0.82, 1.02, 0.26, 1.35, 0.15, 2, 0.98, 0.84, 1.13, 0.88, 0]     # Weights
+        weights =  [1]*11                                                          # No weights
 
         scaled_distances = [distances[i]*weights[i] for i in range(11)] 
 
@@ -125,7 +121,7 @@ def main():
 
     songs = get_songs("../project_train.csv")
     print(random_training_data_test(songs, 5, 1, 1000))
-        
+
 
 if __name__ == "__main__":
     main()
