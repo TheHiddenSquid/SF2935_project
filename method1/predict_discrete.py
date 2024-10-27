@@ -3,7 +3,6 @@ from typing import List
 import random
 
 # Avrage preformance: 75 % correctness (unseen data)
-# Preformance: 80 % correctness (training data)
 
 class Song():
     def __init__(self, danceability, energy, key, loudness, mode, speechiness,
