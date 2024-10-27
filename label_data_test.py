@@ -33,7 +33,7 @@ def label():
         song.append(ans)
 
 
-    with open("../project_test_labeld.csv", "w") as f:
+    with open("../project_test_labeled.csv", "w") as f:
         f.write("".join(titles+[",Label\n"]))
         for song in testing:
             line = ",".join([str(x) for x in song])+"\n"
@@ -51,7 +51,7 @@ def test():
             training.append(Song(*songdata))
 
     testing = []
-    with open("project_test_labeld.csv") as f:
+    with open("project_test_labeled.csv") as f:
         f.readline() # skip first
         for line in f:
             songdata = [eval(x) for x in line.strip().split(",")]
